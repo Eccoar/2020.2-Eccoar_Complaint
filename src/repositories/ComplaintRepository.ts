@@ -13,7 +13,12 @@ export class ComplaintRepository {
         return repository.save(complaint);
     }
 
-    async getAllComplaints(skip: number, take: number, orderDate: string) {
+    async update(complaint: Complaint): Promise<void>{
+        const repository = getRepository(Complaint)
+        repository.update(complaint.id, complaint);
+    }
+
+    async getAllComplaints(skip: number, take: number, orderDate: string): Promise<any> {
         const repository = getRepository(Complaint);
         const [result, count] = await repository.findAndCount({
             skip: skip * take,
