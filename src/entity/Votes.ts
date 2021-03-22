@@ -1,4 +1,5 @@
-import {Entity, PrimaryColumn} from "typeorm";
+import { VoteType } from "./../utils/VoteType";
+import {Column, Entity, PrimaryColumn} from "typeorm";
 
 @Entity("tb_votes")
 export class Votes {
@@ -8,4 +9,7 @@ export class Votes {
 
     @PrimaryColumn()
     complaintId: number;
+
+    @Column({type: "enum", enum:VoteType, nullable: false})
+    typeVote: VoteType;
 }
