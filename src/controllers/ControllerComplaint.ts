@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { Votes } from "../entity/Votes";
-import { Status } from "../utils/Status";
 import { Complaint } from '../entity/Complaint';
 import { ComplaintRepository } from '../repositories/ComplaintRepository';
 import { VotesRepository } from '../repositories/VotesRepository';
+import ComplaintVoteConfirmed from "../utils/ComplaintVoteConfirmed";
+import { ComplaintVote } from "../utils/ComplaintVote";
 
 export default class ControllerComplaint {
 
@@ -23,6 +24,13 @@ export default class ControllerComplaint {
        
         return missingFields;
     }
+
+    private buildVoteType(typeVote: string): ComplaintVote {
+        if (typeVote == "complaintConfirmed") {
+            return new ComplaintVoteConfirmed()
+        }
+        return;
+    } 
 
     async pong (req: Request, res: Response): Promise<void> {
         const pingPong = {
@@ -56,7 +64,6 @@ export default class ControllerComplaint {
         catch (error) {
             resp.status(400);
             resp.json({
-                status: 'erro',
                 error
             })
         }
@@ -75,15 +82,12 @@ export default class ControllerComplaint {
             }
             const vote:Votes = Object.assign(new Votes(), req.body);
             this.voteRepository.saveVote(vote);
-            const complaintVotes = await this.voteRepository.countVotesInComplaint(req.body.complaintId, req.body.typeVote);
-            if (complaintVotes > 9){
-                complaint.status = Status.finished;
-                this.complaintRepository.update(complaint);
-            }
+            const countVotes = await this.voteRepository.countVotesInComplaint(req.body.complaintId, req.body.typeVote);
+            const complaintVote = this.buildVoteType(String(req.body.typeVote));
+            complaintVote.validateVote(countVotes, complaint, this.complaintRepository);
             return res.sendStatus(200);
         } catch (error) {
-            return res.status(400).json({status: 'error', error})
+            return res.status(400).json({"error": error.message});
         }
     }
-
 }
