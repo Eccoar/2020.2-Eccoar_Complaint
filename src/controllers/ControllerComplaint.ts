@@ -21,7 +21,6 @@ export default class ControllerComplaint {
         fields.forEach(field => {
             if(!(field in req.body)) missingFields.push(field);
         });
-       
         return missingFields;
     }
 
@@ -30,7 +29,15 @@ export default class ControllerComplaint {
             return new ComplaintVoteConfirmed()
         }
         return;
-    } 
+    }
+
+    private async checkComplaintExist(complaintId: number): Promise<Complaint> {
+        const complaint = await this.complaintRepository.getById(complaintId);
+        if (complaint == undefined || complaint == null) {
+            throw new Error('Complaint not found');
+        }
+        return complaint;
+    }
 
     async pong (req: Request, res: Response): Promise<void> {
         const pingPong = {
@@ -41,7 +48,6 @@ export default class ControllerComplaint {
 
     async create(req: Request, res:Response): Promise<Response>{
         try {
-            
             const fields = ['name', 'description', 'latitude', 'longitude', 'userId', 'category'];
             const missingFields = this.queryValidator(fields, req);
 
@@ -76,12 +82,11 @@ export default class ControllerComplaint {
             return res.status(400).json({"msg": `Missing fields [${missingFields}]`});
         }
         try {
-            const complaint = await this.complaintRepository.getById(req.body.complaintId);
-            if (complaint == undefined || complaint == null) {
-                throw new Error('Complaint not found');
-            }
+            const complaint = await this.checkComplaintExist(req.body.complaintId);
             const vote:Votes = Object.assign(new Votes(), req.body);
-            this.voteRepository.saveVote(vote);
+            await this.voteRepository.saveVote(vote, (error)=> {
+                res.status(400).json({"error": error.message});
+            });
             const countVotes = await this.voteRepository.countVotesInComplaint(req.body.complaintId, req.body.typeVote);
             const complaintVote = this.buildVoteType(String(req.body.typeVote));
             complaintVote.validateVote(countVotes, complaint, this.complaintRepository);

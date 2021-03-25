@@ -9,8 +9,8 @@ export class VotesRepository {
         return repository.count({complaintId, typeVote});
     }
 
-    async saveVote(vote:Votes): Promise<void> {
+    async saveVote(vote:Votes, callback:(error: Error) => void): Promise<void> {
         const repository = getRepository(Votes);
-        repository.save(vote);
+        await repository.save(vote).catch((error) => callback(error));
     }
 }
