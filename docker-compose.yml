@@ -30,7 +30,7 @@ services:
       TYPEORM_DATABASE: eccoar_complaint_db
       TYPEORM_SYNCHRONIZE: "true"
       TYPEORM_PORT: 3306
-      TYPEORM_LOGGING: "error"
+      TYPEORM_LOGGING: "true"
       TYPEORM_ENTITIES: src/entity/**/*.ts
       TYPEORM_MIGRATIONS: src/migration/**/*.ts
       TYPEORM_SUBSCRIBERS: src/subscriber/**/*.ts

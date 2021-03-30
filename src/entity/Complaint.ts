@@ -36,7 +36,4 @@ export class Complaint {
 
     @Column({nullable: false, default: false, type: "tinyint"})
     status: boolean;
-
-    @Column({length: 255, nullable: true})
-    picture: string;
 }
