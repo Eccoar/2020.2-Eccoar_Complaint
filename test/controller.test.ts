@@ -389,7 +389,27 @@ describe('getUserVotes test', () => {
 });
 
 describe('list upvotes tests', () => {
-	test('Success getUserVote case', async () => {
+	test('Success getUserVote case with filter', async () => {
+		const controller = new ControllerComplaint();
+		const mReq = {} as Request;
+		mReq.query = {
+			userId: 'DdZBkbNTDypv7Jg83jhPTZIEHwsQ',
+			take: '0',
+			skip: '0',
+			status: 'open',
+			category: 'Hole',
+		};
+		const mResp = mockResponse();
+		jest.spyOn(
+			ComplaintRepository.prototype,
+			'getComplaintsWithVotes',
+		).mockImplementationOnce(() => Promise.resolve(getVote));
+		await controller.getUserVote(mReq, mResp);
+		expect(mResp.status).toHaveBeenCalledWith(200);
+		expect(mResp.json).toHaveBeenCalledWith(getVote);
+	});
+
+	test('Success getUserVote case without filter', async () => {
 		const controller = new ControllerComplaint();
 		const mReq = {} as Request;
 		mReq.query = {

@@ -1,6 +1,7 @@
-import { Complaint } from '../src/entity/Complaint';
-import { ComplaintRepository } from '../src/repositories/ComplaintRepository';
-import { Category } from '../src/utils/Category';
+import { Complaint } from '@entity/Complaint';
+import { ComplaintRepository } from '@repositories/ComplaintRepository';
+import { Category } from '@utils/Category';
+import { Status } from '@utils/Status';
 
 const complaintMock = {
 	id: 11,
@@ -60,6 +61,15 @@ const repositoryMock = {
 	}),
 
 	delete: jest.fn(async () => Promise.resolve()),
+
+	createQueryBuilder: jest.fn(() => ({
+		leftJoinAndSelect: jest.fn().mockReturnThis(),
+		limit: jest.fn().mockReturnThis(),
+		offset: jest.fn().mockReturnThis(),
+		andWhere: jest.fn().mockReturnThis(),
+		setParameter: jest.fn().mockReturnThis(),
+		getRawMany: jest.fn().mockReturnThis(),
+	})),
 };
 
 jest.mock('typeorm', () => {
@@ -129,6 +139,32 @@ describe('Create complaint', () => {
 	test('Should create complaint', async () => {
 		const repository = new ComplaintRepository();
 		const result = await repository.createComplaint(complaintMock);
+		expect(result).toBeTruthy();
+	});
+});
+
+describe('Get complaints with votes', () => {
+	test('Should get filtered complaints with votes', async () => {
+		const repository = new ComplaintRepository();
+		const result = await repository.getComplaintsWithVotes(
+			'DdZBkbNTDypv7Jg83jhPTZIEHwsQ',
+			0,
+			2,
+			['open', 'wait'] as Status[],
+			['Hole', 'Water'] as Category[],
+		);
+		expect(result).toBeTruthy();
+	});
+
+	test('Should get complaints with votes', async () => {
+		const repository = new ComplaintRepository();
+		const result = await repository.getComplaintsWithVotes(
+			'DdZBkbNTDypv7Jg83jhPTZIEHwsQ',
+			0,
+			2,
+			[] as Status[],
+			[] as Category[],
+		);
 		expect(result).toBeTruthy();
 	});
 });

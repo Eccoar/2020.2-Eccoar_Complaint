@@ -3,6 +3,7 @@ import { Votes } from '@entity/Votes';
 import { Complaint } from '@entity/Complaint';
 import { Category } from '../utils/Category';
 import { ComplaintWithVote } from '../utils/ComplaintWithVote';
+import { Status } from '@utils/Status';
 
 export class ComplaintRepository {
 	getById(id: number): Promise<Complaint> {
@@ -49,9 +50,11 @@ export class ComplaintRepository {
 		userId: string,
 		skip: number,
 		take: number,
+		status: Status[],
+		category: Category[],
 	): Promise<ComplaintWithVote[]> {
 		const repository = getRepository(Complaint);
-		const getComplaintsVotes: ComplaintWithVote[] = await repository
+		const query = repository
 			.createQueryBuilder('complaint')
 			.leftJoinAndSelect(
 				Votes,
@@ -60,9 +63,20 @@ export class ComplaintRepository {
 				{ userId },
 			)
 			.limit(take)
-			.offset(skip * take)
-			.getRawMany<ComplaintWithVote>();
-		return getComplaintsVotes;
+			.offset(skip * take);
+
+		if (status?.length) {
+			query
+				.andWhere('complaint.status IN (:...status)')
+				.setParameter('status', status);
+		}
+		if (category?.length) {
+			query
+				.andWhere('complaint.category IN (:...category)')
+				.setParameter('category', category);
+		}
+
+		return await query.getRawMany<ComplaintWithVote>();
 	}
 
 	async getComplaintById(
